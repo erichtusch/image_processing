@@ -6,7 +6,7 @@ from PIL import Image as img
 import os
 
 def get_image_paths():
-    #TODO open file paths dialog for image paths
+    #open file paths dialog for image paths
 	print('find images to contrast-process')
 	root = tk.Tk()
 	root.withdraw()
@@ -40,7 +40,7 @@ def get_contrast_levels():
 	# split string by newlines into list
 	contrast_levels = contrast_levels.split('\n')
 	# change list items to floats
-	contrast_levels = [float(i) for i in contrast_levels]
+	contrast_levels = [float(i) for i in contrast_levels if i != ""]
 	return contrast_levels
 
 def process_images(image_paths,contrast_levels,save_dir):
@@ -53,14 +53,17 @@ def process_images(image_paths,contrast_levels,save_dir):
 	#  {1} = contrast level flag 
 	#  {2} = file extension
 	for i in image_paths:
+		#get filename out of filepath
+		filename = os.path.basename(i)
+		filename = os.path.splitext(filename)
+		#open file
+		tmp_img = img.open(i)
+		#change bit depth
+		tmp_img = tmp_img.convert(mode='RGBA',palette=256)
+		##TODO## change all black pixels to transparent
+		#  sample first pixel (I imagine that's top left)
+		#  for all other pixels, if they match, change to alpha
 		for c in contrast_levels:
-			#get filename out of filepath
-			filename = os.path.basename(i)
-			filename = os.path.splitext(filename)
-			#open file
-			tmp_img = img.open(i)
-			#change bit depth
-			tmp_img = tmp_img.convert(mode='RGB',palette=256)
 			#change contrast
 			tmp_img = ie.Contrast(tmp_img).enhance(c)
 			#save file in new location
@@ -76,7 +79,7 @@ if __name__ == '__main__':
     # read in contrast levels from .txt file
 	contrast_levels = get_contrast_levels()
 	print(contrast_levels)
-    #TODO create new image files at each contrast level
+    #create new image files at each contrast level
 	#	 make new folder. 
 	#	if it exists, it will throw an error, but idgaf
 	os.system('mkdir save_images')
