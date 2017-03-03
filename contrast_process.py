@@ -1,14 +1,9 @@
-### Author: ET ###
-##	contrast_process.py ##
-#	file to be used for processing face-stimulus images into the way we want
-#	for KD study
-
 import tkinter as tk 
 from tkinter import filedialog as fd
-import PIL, os
+import PIL
 from PIL import ImageEnhance as ie
 from PIL import Image as img
-from PIL import ImageDraw as imgdraw
+import os
 
 def get_image_paths():
     #open file paths dialog for image paths
@@ -49,32 +44,32 @@ def get_contrast_levels():
 	return contrast_levels
 
 def process_images(image_paths,contrast_levels,save_dir):
-    #	takes list of image paths, 
+    #TODO takes list of image paths, 
     #   processes them n times where n= number of contrast levels
     #   saves processed and original copies in save_dir
-	save_path = save_dir + '\{0[0]}_{1!s}.bmp'
+	save_path = save_dir + '\{0}_{1!s}{2}'
 	# save_path: 
 	#  {0} = filename; 
 	#  {1} = contrast level flag 
 	#  {2} = file extension
 	for i in image_paths:
-		filename = os.path.splitext(os.path.basename(i))
-		print("\nworking on image: {0[0]:*^30}\n".format(filename))
 		#get filename out of filepath
+		filename = os.path.basename(i)
+		filename = os.path.splitext(filename)
+		#open file
+		tmp_img = img.open(i)
+		#change bit depth
+		tmp_img = tmp_img.convert(mode='RGBA',palette=256)
+		##TODO## change all black pixels to transparent
+		#  sample first pixel (I imagine that's top left)
+		#  for all other pixels, if they match, change to alpha
 		for c in contrast_levels:
-			#open file
-			tmp_img = img.open(i)
-			#change bit depth
-			tmp_img = tmp_img.convert(mode='RGBA',palette=256)
 			#change contrast
 			tmp_img = ie.Contrast(tmp_img).enhance(c)
-			#  sample first pixel (I imagine that's top left)
-			#  for all other pixels, if they match, change to alpha
-			imgdraw.floodfill(tmp_img,(0,0),(0,0,0,0)) 
-			print('saving...',save_path.format(filename,int(c*100)))
 			#save file in new location
-			tmp_img.save(save_path.format(filename,int(c*100)))
-			tmp_img.close()
+			print('saving...',save_path.format(filename[0],
+			int(c*100),filename[1]))
+			tmp_img.save(save_path.format(filename[0],int(c*100),filename[1]))
 	return
 
 if __name__ == '__main__':
